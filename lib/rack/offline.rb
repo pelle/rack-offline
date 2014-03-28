@@ -10,7 +10,7 @@ module Rack
     def self.configure(*args, &block)
       new(*args, &block)
     end
-    
+
     # interval in seconds used to compute the cache key when in uncached mode
     # which can be set by passing in options[:cache_interval]
     # note: setting it to 0 or a low value will change the cache key every request
@@ -45,8 +45,12 @@ module Rack
       key = @key || uncached_key
 
       body = ["CACHE MANIFEST"]
-      body << "# #{key}"
+      body << "# #{key}#{@config.version_tag ? " #{@config.version_tag}":""}"
       @config.cache.each do |item|
+        body << URI.escape(item.to_s)
+      end
+
+      @config.dynamic.each do |item|
         body << URI.escape(item.to_s)
       end
 
@@ -79,10 +83,10 @@ module Rack
 
       @key = Digest::SHA2.hexdigest(hash.join)
     end
-    
+
     def uncached_key
       now = Time.now.to_i - Time.now.to_i % @cache_interval
       Digest::SHA2.hexdigest(now.to_s)
-    end    
+    end
   end
 end

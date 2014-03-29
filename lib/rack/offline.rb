@@ -27,25 +27,30 @@ module Rack
 
       @root     = Pathname.new(options[:root] || Dir.pwd)
 
+      @key = options[:key]
+
       if block_given?
         @config = Rack::Offline::Config.new(@root, &block)
       end
 
-      if @cache
-        raise "In order to run Rack::Offline in cached mode, " \
-              "you need to supply a root so Rack::Offline can " \
-              "calculate a hash of the files." unless @root
-        precache_key!
-      else
-        @cache_interval = (options[:cache_interval] || UNCACHED_KEY_INTERVAL).to_i
+      unless @key
+        if @cache
+          raise "In order to run Rack::Offline in cached mode, " \
+                "you need to supply a root so Rack::Offline can " \
+                "calculate a hash of the files." unless @root
+          precache_key!
+        else
+          @cache_interval = (options[:cache_interval] || UNCACHED_KEY_INTERVAL).to_i
+        end
       end
+
     end
 
     def call(env)
       key = @key || uncached_key
 
       body = ["CACHE MANIFEST"]
-      body << "# #{key}#{@config.version_tag ? " #{@config.version_tag}":""}"
+      body << "# #{key}"
       @config.cache.each do |item|
         body << URI.escape(item.to_s)
       end

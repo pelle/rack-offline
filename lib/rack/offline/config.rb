@@ -6,7 +6,6 @@ module Rack
         @dynamic = []
         @network = []
         @fallback = {}
-        @version_tag = nil
         @root = root
         instance_eval(&block) if block_given?
       end
@@ -17,11 +16,6 @@ module Rack
 
       def dynamic(*names)
         @dynamic.concat(names)
-      end
-
-      def version_tag(version = nil)
-        @version_tag = version if version
-        @version_tag
       end
 
       def network(*names)
